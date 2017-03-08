@@ -21,8 +21,12 @@ map<int, map<int, map<int, int> > > d_kv_fd_numb;
 map<int, vector<int> > d_feature_numb; // 每个特征值中所包含的数值列表{A:[Ai, Ai], B:[Bi, Bi]}
 map<int, map<int, int> > d_maxBi; // 存储Ai下最大的Bi值{A:{Ai:Bi, Ai:Bi}, A:{Ai:Bi, Ai:Bi}}
 
-
+int data_max_size = 0;
 vector<vector<int> > train_data, test_data;
+
+double random(double start, double end){
+    return start+(end-start)*rand()/(RAND_MAX + 1.0);
+}
 
 //读取数据至vector<vector<int>>中 adrr中的特征值，需要是离散字符变量转化为离散数值变量后的结果
 vector<vector<int> > read_data(string adrr){
@@ -46,14 +50,12 @@ vector<vector<int> > read_data(string adrr){
         while (getline(sin, field, ',')){ //将字符串流sin中的字符读入到field字符串中，以逗号为分隔符
             fields.push_back(atoi(field.c_str())); //将刚刚读取的字符串添加到向量fields中
         }
-        data.push_back(fields);
+        if(random(0, 9) > 5 && data.size() <= data_max_size)
+            data.push_back(fields);
     }
     return data;
 }
 
-double random(double start, double end){
-    return start+(end-start)*rand()/(RAND_MAX + 1.0);
-}
 void pre_data(vector<vector<int> > data){
 	long long dataSize = data.size();
 
@@ -722,7 +724,7 @@ void choose_best_tree(Node* root, queue<Node*> sub_tree_queue, bool stra){
 
 void pruning(Node* root, bool stra){
     queue<Node*> sub_tree_queue = pruning_all(root);
-    cout<<"sub_tree_queue.size "<<sub_tree_queue.size()<<endl;
+//    cout<<"sub_tree_queue.size "<<sub_tree_queue.size()<<endl;
     choose_best_tree(root, sub_tree_queue, stra);
     return ;
 }
@@ -730,27 +732,29 @@ void pruning(Node* root, bool stra){
 
 int main(){
 
-	int treeLevel = 50;
-    for(int i=6; i<8; i++){
-        string adr = "C:\\Users\\Whiker\\Desktop\\Tree_C++\\krkopt-changed-";
-        char buffer[10];
-        adr = adr + string(_itoa(i, buffer, 10)) + ".csv";
-        vector<vector<int> > data = read_data(adr);
-        pre_data(data);
+    data_max_size = 5000;
+	int treeLevel = 100;
+    int i = 3;
+    string adr = "C:\\Users\\Whiker\\Desktop\\Tree_C++\\krkopt-changed-";
+    char buffer[10];
+    adr = adr + string(_itoa(i, buffer, 10)) + ".csv";
 
-        Node* root = build_tree(treeLevel, true, false);
-        cout<<i<<" per  ";
+    vector<vector<int> > data = read_data(adr);
+    pre_data(data);
+    cout<<"data size: "<<data.size()<<" train data size: "<<train_data.size()<<" test data size: "<<test_data.size()<<endl;
+
+    Node* root = build_tree(treeLevel, true, false);
+    cout<<i<<" per  ";
 //        cout<<"build tree root numb: "<<check_node_numb(root)<<endl;
-        pruning(root, true);
+    pruning(root, true);
 //        Node bestTree = pruning(root);
 //        cout<<i<<" per  !!!!!!!!!!!!!!!add stra ANS: "<<1.0-classify(&bestTree)<<endl;
 
-        Node* rootNoStra = build_tree(treeLevel, false, false);
-        cout<<i<<" per  ";
-        pruning(rootNoStra, false);
+    Node* rootNoStra = build_tree(treeLevel, false, false);
+    cout<<i<<" per  ";
+    pruning(rootNoStra, false);
 //        Node bestTreeNoStra = pruning(rootNoStra);
 //        cout<<i<<" per  !!!!!!!!!!!!!!!no stra ANS: "<<1.0-classify(&bestTreeNoStra)<<endl;
-    }
 
     return 0;
 }
